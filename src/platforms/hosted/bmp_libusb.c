@@ -170,7 +170,7 @@ int find_debuggers(BMP_CL_OPTIONS_t *cl_opts,bmp_info_t *info)
 	ftdi_unknown = false;
 	for (int i = 0;  devs[i]; i++) {
 		libusb_device *dev =  devs[i];
-		int res = libusb_get_device_descriptor(dev, &desc);
+		res = libusb_get_device_descriptor(dev, &desc);
 		if (res < 0) {
             DEBUG_WARN( "WARN: libusb_get_device_descriptor() failed: %s",
 					libusb_strerror(res));

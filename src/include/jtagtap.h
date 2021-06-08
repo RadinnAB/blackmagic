@@ -46,23 +46,23 @@ typedef struct jtag_proc_s {
 	void (*jtagtap_tdi_seq)
 	(const uint8_t final_tms, const uint8_t *DI, int ticks);
 } jtag_proc_t;
-extern jtag_proc_t jtag_proc;
+extern jtag_proc_t g_jtag_proc;
 
 /* generic soft reset: 1, 1, 1, 1, 1, 0 */
 #define jtagtap_soft_reset()	\
-	jtag_proc.jtagtap_tms_seq(0x1F, 6)
+	g_jtag_proc.jtagtap_tms_seq(0x1F, 6)
 
 /* Goto Shift-IR: 1, 1, 0, 0 */
 #define jtagtap_shift_ir()		\
-	jtag_proc.jtagtap_tms_seq(0x03, 4)
+	g_jtag_proc.jtagtap_tms_seq(0x03, 4)
 
 /* Goto Shift-DR: 1, 0, 0 */
 #define jtagtap_shift_dr()		\
-	jtag_proc.jtagtap_tms_seq(0x01, 3)
+	g_jtag_proc.jtagtap_tms_seq(0x01, 3)
 
 /* Goto Run-test/Idle: 1, 1, 0 */
 #define jtagtap_return_idle()	\
-	jtag_proc.jtagtap_tms_seq(0x01, 2)
+	g_jtag_proc.jtagtap_tms_seq(0x01, 2)
 
 # if PC_HOSTED == 1
 int platform_jtagtap_init(void);

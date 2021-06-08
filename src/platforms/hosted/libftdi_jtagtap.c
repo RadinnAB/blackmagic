@@ -29,7 +29,7 @@
 #include "ftdi_bmp.h"
 
 
-extern cable_desc_t *active_cable;
+extern cable_desc_t *g_active_cable;
 extern struct ftdi_context *ftdic;
 
 static void jtagtap_reset(void);
@@ -40,8 +40,8 @@ static uint8_t jtagtap_next(uint8_t dTMS, uint8_t dTDI);
 
 int libftdi_jtagtap_init(jtag_proc_t *jtag_proc)
 {
-	if ((active_cable->mpsse_swd_read.set_data_low == MPSSE_DO) &&
-		(active_cable->mpsse_swd_write.set_data_low == MPSSE_DO)) {
+	if ((g_active_cable->mpsse_swd_read.set_data_low == MPSSE_DO) &&
+		(g_active_cable->mpsse_swd_write.set_data_low == MPSSE_DO)) {
 		printf("Jtag not possible with resistor SWD!\n");
 			return -1;
 	}
@@ -51,13 +51,13 @@ int libftdi_jtagtap_init(jtag_proc_t *jtag_proc)
 	jtag_proc->jtagtap_tdi_tdo_seq = libftdi_jtagtap_tdi_tdo_seq;
 	jtag_proc->jtagtap_tdi_seq = jtagtap_tdi_seq;
 
-	active_state.data_low  |=   active_cable->jtag.set_data_low |
+	active_state.data_low  |=   g_active_cable->jtag.set_data_low |
 		MPSSE_CS | MPSSE_DI | MPSSE_DO;
-	active_state.data_low  &= ~(active_cable->jtag.clr_data_low | MPSSE_SK);
+	active_state.data_low  &= ~(g_active_cable->jtag.clr_data_low | MPSSE_SK);
 	active_state.ddr_low   |=   MPSSE_CS | MPSSE_DO | MPSSE_SK;
 	active_state.ddr_low   &= ~(MPSSE_DI);
-	active_state.data_high |=   active_cable->jtag.set_data_high;
-	active_state.data_high &= ~(active_cable->jtag.clr_data_high);
+	active_state.data_high |=   g_active_cable->jtag.set_data_high;
+	active_state.data_high &= ~(g_active_cable->jtag.clr_data_high);
 	uint8_t gab[16];
 	int garbage =  ftdi_read_data(ftdic, gab, sizeof(gab));
 	if (garbage > 0) {

@@ -44,7 +44,7 @@ typedef struct bmp_info_s {
 #endif
 } bmp_info_t;
 
-extern bmp_info_t info;
+extern bmp_info_t g_bmp_info;
 void bmp_ident(bmp_info_t *info);
 int find_debuggers(BMP_CL_OPTIONS_t *cl_opts,bmp_info_t *info);
 void libusb_exit_function(bmp_info_t *info);

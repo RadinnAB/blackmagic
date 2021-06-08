@@ -85,7 +85,7 @@ int jtag_scan(const uint8_t *irlens)
 #else
 	jtagtap_init();
 #endif
-	jtag_proc.jtagtap_reset();
+	g_jtag_proc.jtagtap_reset();
 
 	if (irlens) {
 		DEBUG_WARN("Given list of IR lengths, skipping probe\n");
@@ -97,7 +97,7 @@ int jtag_scan(const uint8_t *irlens)
 			uint32_t irout;
 			if(*irlens == 0)
 				break;
-			jtag_proc.jtagtap_tdi_tdo_seq((uint8_t*)&irout, 0, ones, *irlens);
+			g_jtag_proc.jtagtap_tdi_tdo_seq((uint8_t*)&irout, 0, ones, *irlens);
 			if (!(irout & 1)) {
 				DEBUG_WARN("check failed: IR[0] != 1\n");
 				return -1;
@@ -114,7 +114,7 @@ int jtag_scan(const uint8_t *irlens)
 		jtagtap_shift_ir();
 
 		DEBUG_INFO("Scanning out IRs\n");
-		if(!jtag_proc.jtagtap_next(0, 1)) {
+		if(!g_jtag_proc.jtagtap_next(0, 1)) {
 			DEBUG_WARN("jtag_scan: Sanity check failed: IR[0] shifted out "
 					   "as 0\n");
 			jtag_dev_count = -1;
@@ -123,7 +123,7 @@ int jtag_scan(const uint8_t *irlens)
 		jtag_devs[0].ir_len = 1; j = 1;
 		while((jtag_dev_count <= JTAG_MAX_DEVS) &&
 		      (jtag_devs[jtag_dev_count].ir_len <= JTAG_MAX_IR_LEN)) {
-			if(jtag_proc.jtagtap_next(0, 1)) {
+			if(g_jtag_proc.jtagtap_next(0, 1)) {
 				if(jtag_devs[jtag_dev_count].ir_len == 1) break;
 				jtag_devs[++jtag_dev_count].ir_len = 1;
 				jtag_devs[jtag_dev_count].ir_prescan = j;
@@ -144,7 +144,7 @@ int jtag_scan(const uint8_t *irlens)
 	}
 
 	DEBUG_INFO("Return to Run-Test/Idle\n");
-	jtag_proc.jtagtap_next(1, 1);
+	g_jtag_proc.jtagtap_next(1, 1);
 	jtagtap_return_idle();
 
 	/* All devices should be in BYPASS now */
@@ -152,7 +152,7 @@ int jtag_scan(const uint8_t *irlens)
 	/* Count device on chain */
 	DEBUG_INFO("Change state to Shift-DR\n");
 	jtagtap_shift_dr();
-	for(i = 0; (jtag_proc.jtagtap_next(0, 1) == 0) && (i <= jtag_dev_count); i++)
+	for(i = 0; (g_jtag_proc.jtagtap_next(0, 1) == 0) && (i <= jtag_dev_count); i++)
 		jtag_devs[i].dr_postscan = jtag_dev_count - i - 1;
 
 	if(i != jtag_dev_count) {
@@ -163,7 +163,7 @@ int jtag_scan(const uint8_t *irlens)
 	}
 
 	DEBUG_INFO("Return to Run-Test/Idle\n");
-	jtag_proc.jtagtap_next(1, 1);
+	g_jtag_proc.jtagtap_next(1, 1);
 	jtagtap_return_idle();
 	if(!jtag_dev_count) {
 		return 0;
@@ -175,17 +175,17 @@ int jtag_scan(const uint8_t *irlens)
 					jtag_devs[i].ir_len;
 
 	/* Reset jtagtap: should take all devs to IDCODE */
-	jtag_proc.jtagtap_reset();
+	g_jtag_proc.jtagtap_reset();
 	jtagtap_shift_dr();
 	for(i = 0; i < jtag_dev_count; i++) {
-		if(!jtag_proc.jtagtap_next(0, 1)) continue;
+		if(!g_jtag_proc.jtagtap_next(0, 1)) continue;
 		jtag_devs[i].jd_idcode = 1;
 		for(j = 2; j; j <<= 1)
-			if(jtag_proc.jtagtap_next(0, 1)) jtag_devs[i].jd_idcode |= j;
+			if(g_jtag_proc.jtagtap_next(0, 1)) jtag_devs[i].jd_idcode |= j;
 
 	}
 	DEBUG_INFO("Return to Run-Test/Idle\n");
-	jtag_proc.jtagtap_next(1, 1);
+	g_jtag_proc.jtagtap_next(1, 1);
 	jtagtap_return_idle();
 #if PC_HOSTED == 1
 	/*Transfer needed device information to firmware jtag_devs*/

@@ -8,7 +8,7 @@ MAKEFLAGS += --no-print-dir
 Q := @
 endif
 
-CFLAGS += -Wall -Wextra -Werror -Wno-char-subscripts \
+CFLAGS += -Wall -Wextra -Werror -Wno-char-subscripts -Wshadow \
 	-std=gnu99 -g3 -MD -I./target \
 	-I. -Iinclude -I$(PLATFORM_DIR)
 

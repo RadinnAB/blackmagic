@@ -267,8 +267,8 @@ static uint32_t jlink_adiv5_swdp_low_access(ADIv5_DP_t *dp, uint8_t RnW,
 	cmd[7] = 0x00;
 	platform_timeout_set(&timeout, 2000);
 	do {
-		send_recv(info.usb_link, cmd,  8, res, 2);
-		send_recv(info.usb_link, NULL, 0, res + 2 , 1);
+		send_recv(g_bmp_info.usb_link, cmd,  8, res, 2);
+		send_recv(g_bmp_info.usb_link, NULL, 0, res + 2 , 1);
 		if (res[2] != 0)
 			raise_exception(EXCEPTION_ERROR, "Low access setup failed");
 		ack = res[1] & 7;
@@ -286,7 +286,7 @@ static uint32_t jlink_adiv5_swdp_low_access(ADIv5_DP_t *dp, uint8_t RnW,
 	if(ack != SWDP_ACK_OK) {
 		if (cl_debuglevel & BMP_DEBUG_TARGET)
 			DEBUG_WARN( "Protocol %d\n", ack);
-		line_reset(&info);
+		line_reset(&g_bmp_info);
 		return 0;
 	}
 	/* Always append 8 idle cycle (SWDIO = 0)!*/
@@ -294,8 +294,8 @@ static uint32_t jlink_adiv5_swdp_low_access(ADIv5_DP_t *dp, uint8_t RnW,
 		memset(cmd + 4, 0, 10);
 		cmd[2] = 33 + 2; /* 2 idle cycles */
 		cmd[8] = 0xfe;
-		send_recv(info.usb_link, cmd, 14, res, 5);
-		send_recv(info.usb_link, NULL, 0, res + 5, 1);
+		send_recv(g_bmp_info.usb_link, cmd, 14, res, 5);
+		send_recv(g_bmp_info.usb_link, NULL, 0, res + 5, 1);
 		if (res[5] != 0)
 			raise_exception(EXCEPTION_ERROR, "Low access read failed");
 		response = res[0] | res[1] << 8 | res[2] << 16 | res[3] << 24;
@@ -313,8 +313,8 @@ static uint32_t jlink_adiv5_swdp_low_access(ADIv5_DP_t *dp, uint8_t RnW,
 		int bit_count  = __builtin_popcount(value);
 		cmd[14] = bit_count & 1;
 		cmd[15] = 0;
-		send_recv(info.usb_link, cmd, 16, res, 6);
-		send_recv(info.usb_link, NULL, 0, res, 1);
+		send_recv(g_bmp_info.usb_link, cmd, 16, res, 6);
+		send_recv(g_bmp_info.usb_link, NULL, 0, res, 1);
 		if (res[0] != 0)
 			raise_exception(EXCEPTION_ERROR, "Low access write failed");
 	}

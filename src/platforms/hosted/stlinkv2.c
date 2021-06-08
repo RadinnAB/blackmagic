@@ -332,7 +332,7 @@ static int stlink_send_recv_retry(uint8_t *txbuf, size_t txsize,
 {
 	uint32_t start = platform_time_ms();
 	int res;
-	usb_link_t *link = info.usb_link;
+	usb_link_t *link = g_bmp_info.usb_link;
 	while(1) {
 		send_recv(link, txbuf, txsize, rxbuf, rxsize);
 		res = stlink_usb_error_check(rxbuf, false);
@@ -354,7 +354,7 @@ static int read_retry(uint8_t *txbuf, size_t txsize,
 	uint32_t start = platform_time_ms();
 	int res;
 	while(1) {
-		send_recv(info.usb_link, txbuf, txsize, rxbuf, rxsize);
+		send_recv(g_bmp_info.usb_link, txbuf, txsize, rxbuf, rxsize);
 		res = stlink_usb_get_rw_status(false);
 		if (res == STLINK_ERROR_OK)
 			return res;
@@ -373,7 +373,7 @@ static int write_retry(uint8_t *cmdbuf, size_t cmdsize,
 {
 	uint32_t start = platform_time_ms();
 	int res;
-	usb_link_t *link = info.usb_link;
+	usb_link_t *link = g_bmp_info.usb_link;
 	while(1) {
 		send_recv(link, cmdbuf, cmdsize, NULL, 0);
 		send_recv(link, txbuf, txsize, NULL, 0);
@@ -650,7 +650,7 @@ static uint32_t stlink_read_coreid(void)
 {
 	uint8_t cmd[16] = {STLINK_DEBUG_COMMAND, STLINK_DEBUG_APIV2_READ_IDCODES};
 	uint8_t data[12];
-	send_recv(info.usb_link, cmd, 16, data, 12);
+	send_recv(g_bmp_info.usb_link, cmd, 16, data, 12);
 	uint32_t id =  data[4] | data[5] << 8 | data[6] << 16 | data[7] << 24;
 	DEBUG_INFO("Read Core ID: 0x%08" PRIx32 "\n", id);
 	return id;
@@ -810,7 +810,7 @@ static void stlink_ap_cleanup(int ap)
                ap,
        };
        uint8_t data[2];
-       send_recv(info.usb_link, cmd, 16, data, 2);
+       send_recv(g_bmp_info.usb_link, cmd, 16, data, 2);
 	   DEBUG_PROBE("Close AP %d\n", ap);
        stlink_usb_error_check(data, true);
 }
@@ -821,7 +821,7 @@ static int stlink_usb_get_rw_status(bool verbose)
 		STLINK_DEBUG_APIV2_GETLASTRWSTATUS2
 	};
 	uint8_t data[12];
-	send_recv(info.usb_link, cmd, 16, data, 12);
+	send_recv(g_bmp_info.usb_link, cmd, 16, data, 12);
 	return stlink_usb_error_check(data, verbose);
 }
 
@@ -925,7 +925,7 @@ static void stlink_regs_read(ADIv5_AP_t *ap, void *data)
 					   ap->apsel};
 	uint8_t res[88];
 	DEBUG_PROBE("AP %d: Read all core registers\n", ap->apsel);
-	send_recv(info.usb_link, cmd, 16, res, 88);
+	send_recv(g_bmp_info.usb_link, cmd, 16, res, 88);
 	stlink_usb_error_check(res, true);
 	memcpy(data, res + 4, 84);
 }
@@ -935,7 +935,7 @@ static uint32_t stlink_reg_read(ADIv5_AP_t *ap, int num)
 	uint8_t cmd[16] = {STLINK_DEBUG_COMMAND, STLINK_DEBUG_APIV2_READREG, num,
 					   ap->apsel};
 	uint8_t res[8];
-	send_recv(info.usb_link, cmd, 16, res, 8);
+	send_recv(g_bmp_info.usb_link, cmd, 16, res, 8);
 	stlink_usb_error_check(res, true);
 	uint32_t ret = res[0] | res[1] << 8 | res[2] << 16 | res[3] << 24;
 	DEBUG_PROBE("AP %d: Read reg %02" PRId32 " val 0x%08" PRIx32 "\n",
@@ -950,7 +950,7 @@ static void stlink_reg_write(ADIv5_AP_t *ap, int num, uint32_t val)
 		val & 0xff, (val >>  8) & 0xff, (val >> 16) & 0xff,
 		(val >> 24) & 0xff, ap->apsel};
 	uint8_t res[2];
-	send_recv(info.usb_link, cmd, 16, res, 2);
+	send_recv(g_bmp_info.usb_link, cmd, 16, res, 2);
 	DEBUG_PROBE("AP %d: Write reg %02" PRId32 " val 0x%08" PRIx32 "\n",
 				 ap->apsel, num, val);
 	stlink_usb_error_check(res, true);
@@ -962,7 +962,7 @@ static void stlink_mem_write_sized(	ADIv5_AP_t *ap, uint32_t dest,
 {
 	if (len == 0)
 		return;
-	usb_link_t *link = info.usb_link;
+	usb_link_t *link = g_bmp_info.usb_link;
 	switch(align) {
 	case ALIGN_BYTE:
 		stlink_writemem8(link, ap, dest, len, (uint8_t *) src);

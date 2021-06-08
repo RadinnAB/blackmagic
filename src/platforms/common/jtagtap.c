@@ -26,7 +26,7 @@
 #include "jtagtap.h"
 #include "gdb_packet.h"
 
-jtag_proc_t jtag_proc;
+jtag_proc_t g_jtag_proc;
 
 static void jtagtap_reset(void);
 static void jtagtap_tms_seq(uint32_t MS, int ticks);
@@ -40,11 +40,11 @@ int jtagtap_init()
 {
 	TMS_SET_MODE();
 
-	jtag_proc.jtagtap_reset = jtagtap_reset;
-	jtag_proc.jtagtap_next =jtagtap_next;
-	jtag_proc.jtagtap_tms_seq = jtagtap_tms_seq;
-	jtag_proc.jtagtap_tdi_tdo_seq = jtagtap_tdi_tdo_seq;
-	jtag_proc.jtagtap_tdi_seq = jtagtap_tdi_seq;
+	g_jtag_proc.jtagtap_reset = jtagtap_reset;
+	g_jtag_proc.jtagtap_next =jtagtap_next;
+	g_jtag_proc.jtagtap_tms_seq = jtagtap_tms_seq;
+	g_jtag_proc.jtagtap_tdi_tdo_seq = jtagtap_tdi_tdo_seq;
+	g_jtag_proc.jtagtap_tdi_seq = jtagtap_tdi_seq;
 
 	/* Go to JTAG mode for SWJ-DP */
 	for(int i = 0; i <= 50; i++) jtagtap_next(1, 0); /* Reset SW-DP */

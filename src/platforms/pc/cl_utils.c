@@ -67,7 +67,7 @@ struct mmap_data {
 #endif
 };
 int cl_debuglevel;
-static struct mmap_data map; /* Portable way way to nullify the struct!*/
+static struct mmap_data g_map; /* Portable way way to nullify the struct!*/
 
 
 static int bmp_mmap(char *file, struct mmap_data *map)
@@ -446,7 +446,7 @@ int cl_execute(BMP_CL_OPTIONS_t *opt)
 	if ((opt->opt_mode == BMP_MODE_FLASH_WRITE) ||
 	    (opt->opt_mode == BMP_MODE_FLASH_VERIFY) ||
 	    (opt->opt_mode == BMP_MODE_FLASH_WRITE_VERIFY)) {
-		int mmap_res = bmp_mmap(opt->opt_flash_file, &map);
+		int mmap_res = bmp_mmap(opt->opt_flash_file, &g_map);
 		if (mmap_res) {
 			DEBUG_WARN("Can not map file: %s. Aborting!\n", strerror(errno));
 			goto target_detach;
@@ -461,9 +461,9 @@ int cl_execute(BMP_CL_OPTIONS_t *opt)
 			return res;
 		}
 	}
-	if (opt->opt_flash_size < map.size)
+	if (opt->opt_flash_size < g_map.size)
 		/* restrict to size given on command line */
-		map.size = opt->opt_flash_size;
+		g_map.size = opt->opt_flash_size;
 	if (opt->opt_mode == BMP_MODE_RESET) {
 		target_reset(t);
 	} else if (opt->opt_mode == BMP_MODE_FLASH_ERASE) {
@@ -478,19 +478,19 @@ int cl_execute(BMP_CL_OPTIONS_t *opt)
 		target_reset(t);
 	} else if ((opt->opt_mode == BMP_MODE_FLASH_WRITE) ||
 	           (opt->opt_mode == BMP_MODE_FLASH_WRITE_VERIFY)) {
-		DEBUG_INFO("Erase    %zu bytes at 0x%08" PRIx32 "\n", map.size,
+		DEBUG_INFO("Erase    %zu bytes at 0x%08" PRIx32 "\n", g_map.size,
 			  opt->opt_flash_start);
 		uint32_t start_time = platform_time_ms();
 		unsigned int erased = target_flash_erase(t, opt->opt_flash_start,
-												 map.size);
+												 g_map.size);
 		if (erased) {
 			DEBUG_WARN("Erased failed!\n");
 			goto free_map;
 		} else {
 			DEBUG_INFO("Flashing %zu bytes at 0x%08" PRIx32 "\n",
-				  map.size, opt->opt_flash_start);
+				  g_map.size, opt->opt_flash_start);
 			unsigned int flashed = target_flash_write(t, opt->opt_flash_start,
-													  map.data, map.size);
+													  g_map.data, g_map.size);
 			/* Buffered write cares for padding*/
 			if (flashed) {
 				DEBUG_WARN("Flashing failed!\n");
@@ -502,7 +502,7 @@ int cl_execute(BMP_CL_OPTIONS_t *opt)
 		target_flash_done(t);
 		uint32_t end_time = platform_time_ms();
 		DEBUG_WARN("Flash Write succeeded for %d bytes, %8.3f kiB/s\n",
-			   (int)map.size, (((map.size * 1.0)/(end_time - start_time))));
+			   (int)g_map.size, (((g_map.size * 1.0)/(end_time - start_time))));
 		if (opt->opt_mode != BMP_MODE_FLASH_WRITE_VERIFY) {
 			target_reset(t);
 			goto free_map;
@@ -524,9 +524,9 @@ int cl_execute(BMP_CL_OPTIONS_t *opt)
 				   opt->opt_flash_file);
 		uint32_t flash_src = opt->opt_flash_start;
 		size_t size = (opt->opt_mode == BMP_MODE_FLASH_READ) ? opt->opt_flash_size:
-			map.size;
+			g_map.size;
 		int bytes_read = 0;
-		void *flash = map.data;
+		void *flash = g_map.data;
 		uint32_t start_time = platform_time_ms();
 		while (size) {
 			int worksize = (size > WORKSIZE) ? WORKSIZE : size;
@@ -576,8 +576,8 @@ int cl_execute(BMP_CL_OPTIONS_t *opt)
 			target_reset(t);
 	}
   free_map:
-	if (map.size)
-		bmp_munmap(&map);
+	if (g_map.size)
+		bmp_munmap(&g_map);
   target_detach:
 	if (t)
 		target_detach(t);

@@ -52,8 +52,8 @@ static void jtagtap_tms_seq(uint32_t MS, int ticks)
 		MS >>= 8;
 	}
 	uint8_t res[4];
-	send_recv(info.usb_link, cmd, 4 + 2 * len, res, len);
-	send_recv(info.usb_link, NULL, 0, res, 1);
+	send_recv(g_bmp_info.usb_link, cmd, 4 + 2 * len, res, len);
+	send_recv(g_bmp_info.usb_link, NULL, 0, res, 1);
 	if (res[0] != 0)
 		raise_exception(EXCEPTION_ERROR, "tagtap_tms_seq failed");
 }
@@ -87,11 +87,11 @@ static void jtagtap_tdi_tdo_seq(uint8_t *DO, const uint8_t final_tms,
 		for (int i = 0; i < len; i++)
 			*tdi++ = DI[i];
 	if (DO)
-		send_recv(info.usb_link, cmd, 4 + 2 * len, DO, len);
+		send_recv(g_bmp_info.usb_link, cmd, 4 + 2 * len, DO, len);
 	else
-		send_recv(info.usb_link, cmd, 4 + 2 * len, cmd, len);
+		send_recv(g_bmp_info.usb_link, cmd, 4 + 2 * len, cmd, len);
 	uint8_t res[1];
-	send_recv(info.usb_link, NULL, 0, res, 1);
+	send_recv(g_bmp_info.usb_link, NULL, 0, res, 1);
 	if (res[0] != 0)
 		raise_exception(EXCEPTION_ERROR, "jtagtap_tdi_tdi failed");
 }
@@ -125,9 +125,9 @@ static uint8_t jtagtap_next(uint8_t dTMS, uint8_t dTDI)
 	cmd[4] = (dTMS) ? 0xff : 0;
 	cmd[5] = (dTDI) ? 0xff : 0;
 	uint8_t ret[1];
-	send_recv(info.usb_link, cmd, 6, ret, 1);
+	send_recv(g_bmp_info.usb_link, cmd, 6, ret, 1);
 	uint8_t res[1];
-	send_recv(info.usb_link, NULL, 0, res, 1);
+	send_recv(g_bmp_info.usb_link, NULL, 0, res, 1);
 	if (res[0] != 0)
 		raise_exception(EXCEPTION_ERROR, "jtagtap_next failed");
 	return (ret[0] & 1);

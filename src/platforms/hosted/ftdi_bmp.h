@@ -118,7 +118,7 @@ uint32_t libftdi_max_frequency_get(void) {return 0;};
 #else
 #include <ftdi.h>
 extern cable_desc_t cable_desc[];
-extern cable_desc_t *active_cable;
+extern cable_desc_t *g_active_cable;
 extern struct ftdi_context *ftdic;
 extern data_desc_t active_state;
 

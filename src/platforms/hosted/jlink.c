@@ -53,8 +53,8 @@ static void jlink_print_caps(bmp_info_t *info)
 	emu_caps = res[0] | (res[1] << 8) | (res[2] << 16) | (res[3] << 24);
 	DEBUG_INFO("Caps %" PRIx32 "\n", emu_caps);
 	if (emu_caps & JLINK_CAP_GET_HW_VERSION) {
-		uint8_t cmd[1] = {CMD_GET_HW_VERSION};
-		send_recv(info->usb_link, cmd, 1, NULL, 0);
+		uint8_t cmd2[1] = {CMD_GET_HW_VERSION};
+		send_recv(info->usb_link, cmd2, 1, NULL, 0);
 		send_recv(info->usb_link, NULL, 0, res, sizeof(res));
 		DEBUG_INFO("HW: Type %d, Major %d, Minor %d, Rev %d\n",
 			   res[3], res[2], res[1], res[0]);
